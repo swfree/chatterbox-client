@@ -1,11 +1,11 @@
 // YOUR CODE HERE:
 var app = {
   server: 'https://api.parse.com/1/classes/messages',
-  currentRoom: 'all',
 
   init: function() {
     // Initialize friends & call fetch once to fill page
     this.friends = {};
+    this.currentRoom = 'all';
     this.fetch(function(obj) {
       return obj.roomname === app.currentRoom;
     });
@@ -20,7 +20,9 @@ var app = {
     $(document).on('submit', '#postMessage', function(e) {
       e.preventDefault();
       var body = $(this).find('input[name="message"]').val();
-      app.addMessage(body);
+      var newRoom = $(this).find('input[name="newRoom"]').val();
+      console.log(newRoom.length);
+      newRoom.length > 0 ? app.addMessage(body, newRoom) : app.addMessage(body);
       app.fetch(function(obj) {
         return obj.roomname === app.currentRoom;
       });
@@ -44,7 +46,7 @@ var app = {
       data: JSON.stringify(message),
       contentType: 'application/json',
       success: function(data) {
-        console.log('sent', data);
+        // console.log('sent', data);
       },
       error: function(data) {
         console.error('chatterbox: Failed to send message', data);
@@ -117,8 +119,13 @@ var app = {
       }
     }
     rooms = _.uniq(rooms, false);
-    var option = '<option value="all">all</option>';
+    if (app.currentRoom === 'all') { 
+      var option = '<option value="all">all</option>'; 
+    } else {
+      var option = '<option value="' + app.currentRoom + '">' + app.currentRoom + '</option><option value="all">all</option>';
+    }
     for (var i = 0; i < rooms.length; i++) {
+      if (rooms[i] === app.currentRoom) { continue; }
       option += '<option value="' + rooms[i] + '">' + rooms[i] + '</option>';
     }
     $('#roomList').append(option);
@@ -128,9 +135,9 @@ var app = {
     $('#chats').empty();
   },
 
-  addMessage: function(message) {
+  addMessage: function(message, newRoom) {
     var currentUsername = window.location.search.substring(10); 
-    var roomName = $('#roomList')[0].value;
+    var roomName = newRoom || $('#roomList')[0].value;
     var sendMessage = {
       username: currentUsername,
       text: message,
