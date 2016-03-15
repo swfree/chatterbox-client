@@ -1,12 +1,11 @@
 // YOUR CODE HERE:
 var app = {
   init: function() {
-    this.friends = ['me'];
+    this.friends = {};
     this.fetch();
     console.log('hi');
     $(document).on('click', '.username', function() { 
-      app.addFriend();
-      console.log($(this)[0].innerText.substring(1));
+      app.addFriend($(this)[0].innerText.substring(1));
     });
 
     $(document).on('submit', '#postMessage', function(e) {
@@ -14,8 +13,6 @@ var app = {
       var body = $(this).find('input[name="message"]').val();
       app.addMessage(body);
     });
-
-
   },
 
   server: 'https://api.parse.com/1/classes/messages',
@@ -37,21 +34,28 @@ var app = {
 
   fetch: function() {
     // TODO: only add newest; or add to top rather than compounding
+    // app.clearMessages();
     $.ajax({
       url: this.server,
       type: 'GET',
       success: function(data) {
-        for (var i = 0; i < data.results.length; i++) {
+        for (var i = 0; i < 30; i++) {
           if (!data.results[i].username || !data.results[i].text) {
             continue;
           }
           var cleanUser = data.results[i].username.replace(/(<([^>]+)>)/ig, ""); 
           var cleanText = data.results[i].text.replace(/(<([^>]+)>)/ig, ""); 
-          $('#chats').append(
-
-            '<div class="chat">' + 
-            '<a href="#" class="username">@' + cleanUser + '</a>' + 
-            '<p>' + cleanText + '</p></div>');
+          if (app.friends.hasOwnProperty(cleanUser)) {
+            $('#chats').append(
+              '<div class="chat">' + 
+              '<a href="#" class="username">@' + cleanUser + '</a>' + 
+              '<p><b>' + cleanText + '</b></p></div>');
+          } else {
+            $('#chats').append(
+              '<div class="chat">' + 
+              '<a href="#" class="username">@' + cleanUser + '</a>' + 
+              '<p>' + cleanText + '</p></div>');
+          }
         } 
       },
       error: function(data) {
@@ -61,7 +65,7 @@ var app = {
   },
  
   clearMessages: function() {
-    $('#chats').html('');
+    $('#chats').empty();
   },
 
   addMessage: function(message) {
@@ -79,9 +83,12 @@ var app = {
     $('#roomSelect').append('<p>' + roomName + '</p>');
   },
 
-  addFriend: function() {
-    //
-    app.friends.push();
+  addFriend: function(user) {
+    if (!app.friends.hasOwnProperty(user)) {
+      app.friends[user] = user;
+      console.log(app.friends[user]);
+      app.fetch();
+    }
   },
 
   handleSubmit: function() {}
@@ -92,7 +99,7 @@ app.init();
 app.fetch();
 setInterval(function() {
   app.fetch();  
-}, 1000);
+}, 3000);
 
 
 
