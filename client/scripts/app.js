@@ -6,10 +6,18 @@ var app = {
     console.log('hi');
     $(document).on('click', '.username', function() { 
       app.addFriend();
-      console.log('iugahwfiughawfiugasfiug');
+      console.log($(this)[0].innerText.substring(1));
     });
 
+    $(document).on('submit', '#postMessage', function(e) {
+      e.preventDefault();
+      var body = $(this).find('input[name="message"]').val();
+      app.addMessage(body);
+    });
+
+
   },
+
   server: 'https://api.parse.com/1/classes/messages',
 
   send: function(message) {
@@ -28,26 +36,23 @@ var app = {
   },
 
   fetch: function() {
-    // debugger;
-    console.log('grteat');
+    // TODO: only add newest; or add to top rather than compounding
     $.ajax({
       url: this.server,
       type: 'GET',
       success: function(data) {
-        // TODO: STAHP THE TROLLS
-        // debugger;
         for (var i = 0; i < data.results.length; i++) {
           if (!data.results[i].username || !data.results[i].text) {
             continue;
           }
-          var cleanUser = data.results[i].username.replace(/(<([^>]+)>)/ig, ""); //data.results[i].username
-          var cleanText = data.results[i].text.replace(/(<([^>]+)>)/ig, ""); //data.results[i].text
+          var cleanUser = data.results[i].username.replace(/(<([^>]+)>)/ig, ""); 
+          var cleanText = data.results[i].text.replace(/(<([^>]+)>)/ig, ""); 
           $('#chats').append(
 
             '<div class="chat">' + 
-            '<div class="username">' + cleanUser + '</div>' + 
+            '<a href="#" class="username">@' + cleanUser + '</a>' + 
             '<p>' + cleanText + '</p></div>');
-        } //onclick="app.addFriend()" //<a href="#" class="username">@' + cleanUser + '</a>'
+        } 
       },
       error: function(data) {
         console.error('chatterbox: Failed to fetch messages', data);
@@ -60,9 +65,14 @@ var app = {
   },
 
   addMessage: function(message) {
-    console.log(window.location.search.substring(10)); // TODO: FIX HACKINESS
-    // this.send(message);
-    // $('#chats').append('<div class="chat">' + message.text + '</div>');
+    var currentUsername = window.location.search.substring(10); 
+    var roomName = 'stuff';
+    var sendMessage = {
+      username: currentUsername,
+      text: message,
+      roomname: roomName
+    };
+    this.send(sendMessage);
   },
 
   addRoom: function(roomName) {
@@ -70,10 +80,8 @@ var app = {
   },
 
   addFriend: function() {
-
-    // debugger;
-    //this.friends.push();
-    console.log('farts');
+    //
+    app.friends.push();
   },
 
   handleSubmit: function() {}
@@ -85,12 +93,6 @@ app.fetch();
 setInterval(function() {
   app.fetch();  
 }, 1000);
-
-app.addMessage();
-
-// // app.init();
-// // console.log(app.friends);
-
 
 
 
