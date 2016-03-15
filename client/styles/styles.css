@@ -5,6 +5,10 @@ body {
     font-family: arial, sans-serif;
 }
 
+a:visited {
+ color: blue;
+}
+
 #main, #chats {
     width: 500px;
     margin: auto;
