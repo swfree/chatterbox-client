@@ -38,6 +38,24 @@ var app = {
     });
   },
 
+  queryRooms: function(room) {
+    $.ajax({
+      url: app.server,
+      type: 'GET',
+      dataType: 'JSON',
+      data: {
+        limit: 30,
+        where: {"roomname": room}
+      },
+      success: function(data) {
+        console.log(data);
+      },
+      error: function(data) {
+        console.error('chatterbox: Failed to get filter rooms', data);
+      },
+    });
+  },
+
   send: function(message) {
     $.ajax({
       url: this.server,
@@ -57,6 +75,9 @@ var app = {
     $.ajax({
       url: this.server,
       type: 'GET',
+      data: {
+        limit: 30
+      },
       success: function(data) {
         // Update Messages:
         app.update(data, predicate);
@@ -74,7 +95,7 @@ var app = {
     var rooms = [];
 
     // Sanitize user inputs for 30 most recent posts
-    for (var i = 0; i < 30; i++) {
+    for (var i = 0; i < data.results.length; i++) {
       // Check if roomname === currentRoom:
       if (predicate && !predicate(data.results[i]) && app.currentRoom !== 'all') { 
         continue; 
@@ -176,6 +197,7 @@ var app = {
 };
 
 app.init();
+app.queryRooms();
 
 setInterval(function() {
   app.fetch(function(obj) {
