@@ -13,7 +13,7 @@ var app = {
     // Click handler for adding usernames to friends list
     $(document).on('click', '.username', function(e) { 
       e.preventDefault();
-      app.addFriend($(this)[0].innerText.substring(1));
+      app.addFriend($(this).attr('name'));
     });
 
     // Handler for submitting messages
@@ -21,7 +21,6 @@ var app = {
       e.preventDefault();
       var body = $(this).find('input[name="message"]').val();
       var newRoom = $(this).find('input[name="newRoom"]').val();
-      console.log(newRoom.length);
       newRoom.length > 0 ? app.addMessage(body, newRoom) : app.addMessage(body);
       app.fetch(function(obj) {
         return obj.roomname === app.currentRoom;
@@ -93,24 +92,40 @@ var app = {
     // Append sanitized user inputs to chats DOM element
     for (var i = 0; i < cleanUsers.length; i++) {
       if (app.friends.hasOwnProperty(cleanUsers[i])) {
-        $('#chats').append(
-          '<div class="chat">' + 
-          '<a href="#" class="username">@' + cleanUsers[i] + '</a>' + 
-          '<p><b>' + cleanTexts[i] + '</b></p></div>');
+        $('#chats').append(app.formatMessage(cleanUsers[i], cleanTexts[i], true));
       } else {
-        $('#chats').append(
-          '<div class="chat">' + 
-          '<a href="#" class="username">@' + cleanUsers[i] + '</a>' + 
-          '<p>' + cleanTexts[i] + '</p></div>');
+        $('#chats').append(app.formatMessage(cleanUsers[i], cleanTexts[i], false));
       }
     }
     app.getRooms(data);
+  },
+
+  formatMessage: function(user, message, isFriend){
+    var html = '<div class="row">';
+    html += '<div class="col s12">';
+    html += '<div class="card indigo darken-3">';
+    html += '<div class="card-content white-text">';
+    if (isFriend) {
+      html += '<span class="card-title username"><i class="material-icons">grade</i>' + user + '</span>';
+    } else {
+      html += '<span class="card-title username">' + user + '</span>';
+    }
+
+    html += '<p>' + message + '</p>';
+    html += '</div>';
+    html += '<div class="card-action">';
+    // <a class="btn-floating btn-large waves-effect waves-light red"><i class="material-icons">add</i></a>
+    html += '<a class="btn-floating btn-medium waves-effect waves-light red username" name="' + user + '" href="#"><i class="material-icons">add</i></a>';
+    html += '<p> ADD FRIEND</p>';
+    html += '</div></div></div></div>';
+    return html;
   },
 
     // Add rooms to rooms dropdown
     // Collect all rooms currently in all server messages
     // populate select dropdown with those rooms
   getRooms: function(data) {
+    $('select').material_select();
     $('#roomList').html('');
     var rooms = [];
     for (var i = 0; i < data.results.length; i++) {
@@ -153,7 +168,6 @@ var app = {
   addFriend: function(user) {
     if (!app.friends.hasOwnProperty(user)) {
       app.friends[user] = user;
-      console.log(app.friends[user]);
       app.fetch(function(obj) {
         return obj.roomname === app.currentRoom;
       });
